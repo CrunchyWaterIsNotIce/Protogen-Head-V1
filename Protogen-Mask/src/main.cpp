@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
+#include "animation_handler.h"
+#include "animations.h"
 
 #define LED_PIN     25
 #define NUM_LEDS    432
@@ -10,133 +12,44 @@
 
 CRGB leds[NUM_LEDS];
 
-// Mouth (right to left; top to bottom), Nose (left to right; top to bottom), Right Eye(right to left; bottom to top), Left Eye(right to left; top to bottom)
+// LED index offsets for each body part
+#define MOUTH_START 0
+#define NOSE_START  256
+#define RIGHT_EYE_START 304
+#define LEFT_EYE_START  368
 
-const CRGB mouthSprite[] = {
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),  
-  CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(63, 63, 116),
-  CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0),  
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), 
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0),
-  CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255),
-  CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), 
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),  
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116),
-  CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),  
-};
-
-const CRGB noseSprite[] = {
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(48, 96, 130), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(203, 219, 252), CRGB(91, 110, 225),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(91, 110, 225), CRGB(203, 219, 252), CRGB(99, 155, 255), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(48, 96, 130),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0),
-};
-
-const CRGB eyeRightSprite[] = {
-  CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(91, 110, 225),
-  CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(203, 219, 252), CRGB(48, 96, 130), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(91, 110, 225),
-  CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(203, 219, 252), CRGB(203, 219, 252), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0),
-  CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(203, 219, 252), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0),      
-  CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0),       
-  CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255),
-};
-
-const CRGB eyeLeftSprite[] = {
-  CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255),       
-  CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(203, 219, 252), CRGB(91, 110, 225), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(63, 63, 116),      
-  CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(203, 219, 252), CRGB(203, 219, 252), CRGB(99, 155, 255), CRGB(99, 155, 255),
-  CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(203, 219, 252), CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(91, 110, 225),
-  CRGB(91, 110, 225), CRGB(91, 110, 225), CRGB(99, 155, 255), CRGB(91, 110, 225), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(48, 96, 130), CRGB(0, 0, 0),
-  CRGB(0, 0, 0), CRGB(63, 63, 116), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(48, 96, 130), CRGB(63, 63, 116), CRGB(63, 63, 116), CRGB(0, 0, 0),
-};
+// Animation controllers for each body part
+AnimationController mouthController;
+AnimationController noseController;
+AnimationController eyeRightController;
+AnimationController eyeLeftController;
 
 void setup() {
   Serial.begin(115200);
   pinMode(ONBOARD_LED, OUTPUT);
-
+  
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, 3000); 
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.clear(true);
-
+  
   digitalWrite(ONBOARD_LED, HIGH);
-
-  // Mouth (starts at LED 0)
-  int mouthSize = sizeof(mouthSprite) / sizeof(mouthSprite[0]);
-  for (int i = 0; i < mouthSize; i++) {
-    leds[i] = mouthSprite[i];
-  }
   
-  // Nose (starts after mouth)
-  int noseSize = sizeof(noseSprite) / sizeof(noseSprite[0]);
-  for (int i = 0; i < noseSize; i++) {
-    leds[mouthSize + i] = noseSprite[i];
-  }
+  // Initialize animations
+  mouthController.setAnimation(mouthIdle);
+  noseController.setAnimation(noseIdle);
+  eyeRightController.setAnimation(eyeRightIdle);
+  eyeLeftController.setAnimation(eyeLeftIdle);
   
-  // Right Eye (starts after nose)
-  int eyeRightSize = sizeof(eyeRightSprite) / sizeof(eyeRightSprite[0]);
-  for (int i = 0; i < eyeRightSize; i++) {
-    leds[mouthSize + noseSize + i] = eyeRightSprite[i];
-  }
-  
-  // Left Eye (starts after right eye)
-  int eyeLeftSize = sizeof(eyeLeftSprite) / sizeof(eyeLeftSprite[0]);
-  for (int i = 0; i < eyeLeftSize; i++) {
-    leds[mouthSize + noseSize + eyeRightSize + i] = eyeLeftSprite[i];
-  }
-
-  FastLED.show();
-  
-  Serial.print("Mouth: 0-");
-  Serial.println(mouthSize - 1);
-  Serial.print("Nose: ");
-  Serial.print(mouthSize);
-  Serial.print("-");
-  Serial.println(mouthSize + noseSize - 1);
-  Serial.print("Right Eye: ");
-  Serial.print(mouthSize + noseSize);
-  Serial.print("-");
-  Serial.println(mouthSize + noseSize + eyeRightSize - 1);
-  Serial.print("Left Eye: ");
-  Serial.print(mouthSize + noseSize + eyeRightSize);
-  Serial.print("-");
-  Serial.println(mouthSize + noseSize + eyeRightSize + eyeLeftSize - 1);
+  Serial.println("Protogen Face Initialized!");
 }
 
 void loop() {
-
+  // Update all animations
+  mouthController.update(leds, MOUTH_START, mouthIdle);
+  noseController.update(leds, NOSE_START, noseIdle);
+  eyeRightController.update(leds, RIGHT_EYE_START, eyeRightIdle);
+  eyeLeftController.update(leds, LEFT_EYE_START, eyeLeftIdle);
+  
+  FastLED.show();
 }
