@@ -44,8 +44,8 @@ void setup() {
     FastLED.show();
 
     visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
-    leftEarPipeline.setSolid(CRGB::Black, NUM_EAR_LEDS);
-    rightEarPipeline.setSolid(CRGB::Black, NUM_EAR_LEDS);
+    leftEarPipeline.setAnimation(leftEarIdle, NUM_EAR_LEDS);
+    rightEarPipeline.setAnimation(rightEarIdle, NUM_EAR_LEDS);
 }
 
 void loop() {

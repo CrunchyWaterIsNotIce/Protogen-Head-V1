@@ -340,11 +340,83 @@ const CRGB eyeLeftFrames[] PROGMEM = {
   CRGB(99, 155, 255), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(0, 0, 0), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(99, 155, 255), CRGB(0, 0, 0), 
 };
 
+// RIGHTEAR Animation
+const CRGB rightEarFrames[] PROGMEM = {
+  // Frame 0
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+};
+
+// LEFTEAR Animation
+const CRGB leftEarFrames[] PROGMEM = {
+  // Frame 0
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+  CRGB(99, 155, 255), 
+};
+
 // Animation definitions
 Animation mouthIdle = {mouthFrames, 5, 256, 8};    // 1 frame, 256 pixels, 1 fps
 Animation noseIdle = {noseFrames, 5, 48, 8};       // 1 frame, 48 pixels, 1 fps
 Animation eyeRightIdle = {eyeRightFrames, 5, 64, 8}; // 1 frame, 64 pixels, 1 fps
 Animation eyeLeftIdle = {eyeLeftFrames, 5, 64, 8};   // 1 frame, 64 pixels, 1 fps
+Animation rightEarIdle = {rightEarFrames, 1, 30, 10}; // 1 frame, 30 pixels, 1 fps
+Animation leftEarIdle = {leftEarFrames, 1, 30, 10}; // 1 frame, 30 pixels, 1 fps
 
 extern const VisorLayout visorLayout = {
   0,    // mouthStart

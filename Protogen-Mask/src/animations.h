@@ -8,6 +8,8 @@ extern const CRGB mouthFrames[];
 extern const CRGB noseFrames[];
 extern const CRGB eyeRightFrames[];
 extern const CRGB eyeLeftFrames[];
+extern const CRGB rightEarFrames[];
+extern const CRGB leftEarFrames[];
 
 extern const VisorLayout visorLayout;
 
@@ -15,5 +17,7 @@ extern Animation mouthIdle;
 extern Animation noseIdle;
 extern Animation eyeRightIdle;
 extern Animation eyeLeftIdle;
+extern Animation rightEarIdle;
+extern Animation leftEarIdle;
 
 #endif
