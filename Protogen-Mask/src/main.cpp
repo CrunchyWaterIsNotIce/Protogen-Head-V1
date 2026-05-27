@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
+#include "animations.h"
+#include "animation_handler.h"
 
 // --- PIN DEFINITIONS ---
 #define VISOR_PIN 25
@@ -13,7 +15,7 @@
 
 #define LED_TYPE WS2812B 
 #define COLOR_ORDER GRB
-#define BRIGHTNESS 64 // Turned up slightly so the purple pops
+#define BRIGHTNESS 10 // Baseline brightness; power limit keeps it safe
 
 CRGB visorLeds[NUM_VISOR_LEDS];
 CRGB leftEarLeds[NUM_EAR_LEDS];
@@ -24,6 +26,11 @@ CRGB rightEarLeds[NUM_EAR_LEDS];
 // 50 triggers on whispers. 800 requires a loud clap.
 const int SOUND_THRESHOLD = 3000; 
 
+VisorPipeline visorPipeline;
+EarPipeline leftEarPipeline;
+EarPipeline rightEarPipeline;
+SoundTrigger soundTrigger(SOUND_THRESHOLD, 150);
+
 void setup() {
     Serial.begin(115200);
 
@@ -31,8 +38,14 @@ void setup() {
     FastLED.addLeds<LED_TYPE, LEFT_EAR_PIN, COLOR_ORDER>(leftEarLeds, NUM_EAR_LEDS);
     FastLED.addLeds<LED_TYPE, RIGHT_EAR_PIN, COLOR_ORDER>(rightEarLeds, NUM_EAR_LEDS);
     
+    FastLED.setMaxPowerInVoltsAndMilliamps(5, 3000);
     FastLED.setBrightness(BRIGHTNESS);
     FastLED.clear(true);
+    FastLED.show();
+
+    visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+    leftEarPipeline.setSolid(CRGB::Black, NUM_EAR_LEDS);
+    rightEarPipeline.setSolid(CRGB::Black, NUM_EAR_LEDS);
 }
 
 void loop() {
@@ -59,16 +72,16 @@ void loop() {
     Serial.println(peakToPeak);
 
     // --- 3. THE SIMPLE TRIGGER ---
-    if (peakToPeak > SOUND_THRESHOLD) {
+    bool soundActive = soundTrigger.update(peakToPeak);
+    if (soundActive) {
         // It heard a sound! Turn everything PURPLE.
         fill_solid(visorLeds, NUM_VISOR_LEDS, CRGB::Purple);
         fill_solid(leftEarLeds, NUM_EAR_LEDS, CRGB::Purple);
         fill_solid(rightEarLeds, NUM_EAR_LEDS, CRGB::Purple);
     } else {
-        // It is quiet. Turn everything OFF.
-        fill_solid(visorLeds, NUM_VISOR_LEDS, CRGB::Black);
-        fill_solid(leftEarLeds, NUM_EAR_LEDS, CRGB::Black);
-        fill_solid(rightEarLeds, NUM_EAR_LEDS, CRGB::Black);
+        visorPipeline.update(visorLeds, visorLayout);
+        leftEarPipeline.update(leftEarLeds);
+        rightEarPipeline.update(rightEarLeds);
     }
 
     // Push the colors to the mask

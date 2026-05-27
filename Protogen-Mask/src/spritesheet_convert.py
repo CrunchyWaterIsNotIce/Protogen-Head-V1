@@ -95,3 +95,55 @@ for x in range(7, -1, -1):  # right to left
             print(f"CRGB({r}, {g}, {b}), ", end="")
     print()
 print("};")
+
+
+## left ear
+left_ear = Image.open('./assets/test_leftear_1x30.png')
+left_ear = left_ear.convert('RGB')
+left_ear_map = left_ear.load()
+
+le_width, le_height = left_ear.size
+print('=' * 5, 'Left Ear', '=' * 5)
+print(f"Image size: {le_width}x{le_height}")
+print(f"Total pixels: {le_width * le_height}")
+
+
+print("\nconst CRGB leftEarSprite[] = {")
+for x in range(le_width): # left to right
+    print("  ", end="")
+    if x % 2 == 0:
+        for y in range(le_height): # top to bottom
+            r, g, b = left_ear_map[x, y]
+            print(f"CRGB({r}, {g}, {b}), ", end="")
+    else:
+        for y in range(le_height - 1, -1, -1):
+            r, g, b = left_ear_map[x, y]
+            print(f"CRGB({r}, {g}, {b}), ", end="")
+    print()
+print("};")
+
+
+## right ear
+right_ear = Image.open('./assets/test_rightear_1x30.png')
+right_ear = right_ear.convert('RGB')
+right_ear_map = right_ear.load()
+
+re_width, re_height = right_ear.size
+print('=' * 5, 'Right Ear', '=' * 5)
+print(f"Image size: {re_width}x{re_height}")
+print(f"Total pixels: {re_width * re_height}")
+
+
+print("\nconst CRGB rightEarSprite[] = {")
+for x in range(re_width): # left to right
+    print("  ", end="")
+    if x % 2 == 0:
+        for y in range(re_height): # top to bottom
+            r, g, b = right_ear_map[x, y]
+            print(f"CRGB({r}, {g}, {b}), ", end="")
+    else:
+        for y in range(re_height - 1, -1, -1):
+            r, g, b = right_ear_map[x, y]
+            print(f"CRGB({r}, {g}, {b}), ", end="")
+    print()
+print("};")
