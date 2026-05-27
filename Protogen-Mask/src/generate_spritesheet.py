@@ -99,8 +99,27 @@ def generate_animation(image_path, part_name, frame_width, frame_height, scan_ri
 # Left Eye: right to left, top to bottom
 # generate_animation('./assets/test_lefteye_8x8-Sheet.png', 'eyeLeft', 8, 8, scan_right_to_left=True, start_bottom=False)
 
-# Right Ear: right to left, top to bottom
-generate_animation('./assets/test_rightear_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
+# # Right Ear: right to left, top to bottom
+# generate_animation('./assets/test_rightear_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
 
-# Left Ear: right to left, top to bottom
-generate_animation('./assets/test_leftear_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
+# # Left Ear: right to left, top to bottom
+# generate_animation('./assets/test_leftear_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
+
+
+# Mouth: right to left, top to bottom
+generate_animation('./assets/evil_mouth_8x32-Sheet.png', 'mouth', 32, 8, scan_right_to_left=True, start_bottom=True)
+
+# Nose: left to right, bottom to top
+generate_animation('./assets/evil_nose_4x12-Sheet.png', 'nose', 12, 4, scan_right_to_left=False, start_bottom=False)
+
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/evil_righteye_8x8-Sheet.png', 'eyeRight', 8, 8, scan_right_to_left=True, start_bottom=False)
+
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/evil_lefteye_8x8-Sheet.png', 'eyeLeft', 8, 8, scan_right_to_left=True, start_bottom=False)
+
+# # Right Ear: right to left, top to bottom
+generate_animation('./assets/evil_rightear_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
+
+# # Left Ear: right to left, top to bottom
+generate_animation('./assets/evil_leftear_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
