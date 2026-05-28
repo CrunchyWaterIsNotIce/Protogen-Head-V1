@@ -8,6 +8,7 @@
 #define LEFT_EAR_PIN 18   
 #define RIGHT_EAR_PIN 19  
 #define MIC_PIN 33
+#define SENSE_PIN 26
 
 // --- LED COUNTS ---
 #define NUM_VISOR_LEDS 432
@@ -25,14 +26,22 @@ CRGB rightEarLeds[NUM_EAR_LEDS];
 // Change this number to make the mic more or less sensitive.
 // 50 triggers on whispers. 800 requires a loud clap.
 const int SOUND_THRESHOLD = 3000; 
+const unsigned long BLINK_MIN_MS = 5000;
+const unsigned long BLINK_MAX_MS = 8000;
+const unsigned long BLINK_DURATION_MS = 150;
+const unsigned long CONNECT_ANIM_MS = 1200  ;
 
 VisorPipeline visorPipeline;
 EarPipeline leftEarPipeline;
 EarPipeline rightEarPipeline;
-SoundTrigger soundTrigger(SOUND_THRESHOLD, 150);
+BlinkPipeline blinkPipeline;
+ConnectionPipeline connectionPipeline;
+SoundTrigger soundTrigger(SOUND_THRESHOLD, 1000);
 
 void setup() {
     Serial.begin(115200);
+    randomSeed(analogRead(MIC_PIN));
+    pinMode(SENSE_PIN, INPUT_PULLUP);
 
     FastLED.addLeds<LED_TYPE, VISOR_PIN, COLOR_ORDER>(visorLeds, NUM_VISOR_LEDS);
     FastLED.addLeds<LED_TYPE, LEFT_EAR_PIN, COLOR_ORDER>(leftEarLeds, NUM_EAR_LEDS);
@@ -46,11 +55,48 @@ void setup() {
     visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
     leftEarPipeline.setAnimation(leftEarIdle, NUM_EAR_LEDS);
     rightEarPipeline.setAnimation(rightEarIdle, NUM_EAR_LEDS);
+    blinkPipeline.setAnimations(eyeLeft_blinkAction, eyeRight_blinkAction);
+    blinkPipeline.setTiming(BLINK_MIN_MS, BLINK_MAX_MS, BLINK_DURATION_MS);
+    connectionPipeline.setTiming(CONNECT_ANIM_MS);
+    connectionPipeline.setSegmentAnimations(
+        mouth_connectAction, nose_connectAction, eyeRight_connectAction, eyeLeft_connectAction,
+        leftEar_connectAction, rightEar_connectAction, visorLayout);
 }
 
 void loop() {
+    unsigned long now = millis();
+    static bool lastConnected = false;
+    static bool connectSequenceDone = false;
+
+    bool connected = (digitalRead(SENSE_PIN) == LOW);
+    if (!connected) {
+        if (lastConnected) {
+            visorPipeline.setAnimations(mouth_connectAction, nose_connectAction, eyeRight_connectAction, eyeLeft_connectAction);
+        }
+        lastConnected = false;
+        connectSequenceDone = false;
+        visorPipeline.reset();
+        blinkPipeline.reset();
+        leftEarPipeline.update(leftEarLeds);
+        rightEarPipeline.update(rightEarLeds);
+        FastLED.show();
+        return;
+    }
+
+    if (!lastConnected) {
+        connectSequenceDone = false;
+        connectionPipeline.reset();
+        lastConnected = true;
+    }
+
+    if (!connectSequenceDone) {
+        connectSequenceDone = connectionPipeline.update(
+            visorLeds, NUM_VISOR_LEDS, leftEarLeds, rightEarLeds, NUM_EAR_LEDS);
+        FastLED.show();
+        return;
+    }
     // 1. Read the microphone for a tiny fraction of a second (50ms)
-    unsigned long startMillis = millis();
+    unsigned long startMillis = now;
     unsigned int signalMax = 0;
     unsigned int signalMin = 4095; 
 
@@ -73,16 +119,19 @@ void loop() {
 
     // --- 3. THE SIMPLE TRIGGER ---
     bool soundActive = soundTrigger.update(peakToPeak);
-    if (soundActive) {
-        // It heard a sound! Turn everything PURPLE.
-        fill_solid(visorLeds, NUM_VISOR_LEDS, CRGB::Purple);
-        fill_solid(leftEarLeds, NUM_EAR_LEDS, CRGB::Purple);
-        fill_solid(rightEarLeds, NUM_EAR_LEDS, CRGB::Purple);
-    } else {
-        visorPipeline.update(visorLeds, visorLayout);
-        leftEarPipeline.update(leftEarLeds);
-        rightEarPipeline.update(rightEarLeds);
+    static bool talkMode = false;
+    if (soundActive && !talkMode) {
+        visorPipeline.setAnimations(mouth_talkAction, noseIdle, eyeRightIdle, eyeLeftIdle);
+        talkMode = true;
+    } else if (!soundActive && talkMode) {
+        visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+        talkMode = false;
     }
+
+    visorPipeline.update(visorLeds, visorLayout);
+    leftEarPipeline.update(leftEarLeds);
+    rightEarPipeline.update(rightEarLeds);
+    blinkPipeline.update(visorLeds, visorLayout);
 
     // Push the colors to the mask
     FastLED.show();
