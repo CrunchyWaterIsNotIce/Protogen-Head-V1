@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include "animations.h"
 #include "animation_handler.h"
+#include "wifi_portal.h"
 
 // --- PIN DEFINITIONS ---
 #define VISOR_PIN 25
@@ -30,6 +31,7 @@ const unsigned long BLINK_MIN_MS = 5000;
 const unsigned long BLINK_MAX_MS = 8000;
 const unsigned long BLINK_DURATION_MS = 150;
 const unsigned long CONNECT_ANIM_MS = 1200  ;
+const unsigned long SENSE_DEBOUNCE_MS = 50;
 
 VisorPipeline visorPipeline;
 EarPipeline leftEarPipeline;
@@ -42,6 +44,8 @@ void setup() {
     Serial.begin(115200);
     randomSeed(analogRead(MIC_PIN));
     pinMode(SENSE_PIN, INPUT_PULLUP);
+
+    wifiPortalSetup();
 
     FastLED.addLeds<LED_TYPE, VISOR_PIN, COLOR_ORDER>(visorLeds, NUM_VISOR_LEDS);
     FastLED.addLeds<LED_TYPE, LEFT_EAR_PIN, COLOR_ORDER>(leftEarLeds, NUM_EAR_LEDS);
@@ -64,17 +68,34 @@ void setup() {
 }
 
 void loop() {
+    wifiPortalUpdate();
     unsigned long now = millis();
     static bool lastConnected = false;
     static bool connectSequenceDone = false;
+    static bool postConnectInitDone = false;
+    static bool talkMode = false;
+    static bool lastSenseRaw = false;
+    static bool debouncedConnected = false;
+    static unsigned long senseChangeMs = 0;
 
-    bool connected = (digitalRead(SENSE_PIN) == LOW);
+    bool senseRaw = (digitalRead(SENSE_PIN) == LOW);
+    if (senseRaw != lastSenseRaw) {
+        lastSenseRaw = senseRaw;
+        senseChangeMs = now;
+    } else if (now - senseChangeMs >= SENSE_DEBOUNCE_MS) {
+        debouncedConnected = senseRaw;
+    }
+
+    bool connected = debouncedConnected;
     if (!connected) {
         if (lastConnected) {
-            visorPipeline.setAnimations(mouth_connectAction, nose_connectAction, eyeRight_connectAction, eyeLeft_connectAction);
+            Serial.println("Mask disconnected");
         }
         lastConnected = false;
         connectSequenceDone = false;
+        postConnectInitDone = false;
+        talkMode = false;
+        fill_solid(visorLeds, NUM_VISOR_LEDS, CRGB::Black);
         visorPipeline.reset();
         blinkPipeline.reset();
         leftEarPipeline.update(leftEarLeds);
@@ -85,6 +106,7 @@ void loop() {
 
     if (!lastConnected) {
         connectSequenceDone = false;
+        postConnectInitDone = false;
         connectionPipeline.reset();
         lastConnected = true;
     }
@@ -94,6 +116,15 @@ void loop() {
             visorLeds, NUM_VISOR_LEDS, leftEarLeds, rightEarLeds, NUM_EAR_LEDS);
         FastLED.show();
         return;
+    }
+
+    if (!postConnectInitDone) {
+        visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+        visorPipeline.reset();
+        blinkPipeline.reset();
+        talkMode = false;
+        postConnectInitDone = true;
+        Serial.println("Mask connected, switching to idle");
     }
     // 1. Read the microphone for a tiny fraction of a second (50ms)
     unsigned long startMillis = now;
@@ -115,11 +146,10 @@ void loop() {
     unsigned int peakToPeak = signalMax - signalMin;
     
     // Print the volume to the computer so you can see the numbers
-    Serial.println(peakToPeak);
+    // Serial.println(peakToPeak);
 
     // --- 3. THE SIMPLE TRIGGER ---
     bool soundActive = soundTrigger.update(peakToPeak);
-    static bool talkMode = false;
     if (soundActive && !talkMode) {
         visorPipeline.setAnimations(mouth_talkAction, noseIdle, eyeRightIdle, eyeLeftIdle);
         talkMode = true;
