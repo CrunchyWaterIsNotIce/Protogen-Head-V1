@@ -1,0 +1,266 @@
+<!doctype html>
+<html><head>
+<meta charset="UTF-8">
+<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+<meta name='apple-mobile-web-app-capable' content='yes'>
+<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+<meta name='apple-mobile-web-app-title' content='Protogen'>
+<title>Visor Control</title>
+<style>
+body { 
+    background: linear-gradient(180deg, #292733 0%, #111 100%); 
+    color: #555; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+    font-family: monospace; 
+    user-select: none; 
+    -webkit-user-select: none; 
+    overflow: hidden; 
+}
+
+/* --- HEADER ALIGNMENT FIXES --- */
+.header { 
+    flex-shrink: 0; 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 45px 25px 10px 25px; 
+    font-size: 1.1rem; 
+    color: #666; 
+    font-weight: bold; 
+    line-height: 1; 
+}
+
+.header-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+}
+
+.header-right {
+    align-items: flex-end;
+}
+
+/* Switched to center alignment to lock the text and icon together */
+.header-row {
+    display: flex;
+    align-items: center;
+}
+
+.signal-wrapper { 
+    gap: 8px; 
+}
+
+.icon-container {
+    width: 20px; 
+    display: flex;
+    justify-content: center; 
+    align-items: center;   
+}
+
+#signal-icon { 
+    height: 1.1rem; 
+    width: auto;
+    cursor: pointer; 
+    transition: transform 0.1s, height 0.2s ease; 
+    transform-origin: center center; 
+}
+
+#signal-icon:active { 
+    transform: scale(0.85); 
+}
+
+/* --- CAROUSEL LAYOUT --- */
+.carousel-wrapper {
+    position: relative;
+    width: 100%;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-arrow {
+    width: 30px; 
+    height: auto;
+    cursor: pointer;
+    z-index: 20;
+    opacity: 0.5;
+    transition: transform 0.1s, opacity 0.2s;
+    margin: 0 10px; 
+}
+
+.nav-arrow:active { 
+    transform: scale(0.85); 
+    opacity: 1; 
+}
+
+.container { 
+    position: relative; 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 12px; 
+    padding: 0 5px; 
+    width: 100%; 
+    max-width: min(440px, 42vh); 
+    box-sizing: border-box; 
+}
+
+.btn { 
+    width: 100%; 
+    height: auto; 
+    display: block;
+    cursor: pointer; 
+    opacity: 0.4; 
+    transition: opacity 0.3s, transform 0.1s, filter 0.3s; 
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); 
+}
+
+.btn.selected {
+    opacity: 1;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+}
+
+.btn:active { 
+    transform: scale(0.96); 
+    filter: brightness(0.8); 
+}
+
+/* --- CENTER BUTTON FIX --- */
+.center-btn { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 56%; /* Shrunk from 56% to safely clear the button edges */
+    height: auto;
+    z-index: 10; 
+}
+
+.center-btn:active { 
+    transform: translate(-50%, -50%) scale(0.96); 
+}
+
+.footer { 
+    flex-shrink: 0;
+    text-align: center; 
+    padding: 15px 15px 30px 15px; 
+    font-size: 0.75rem; 
+    color: #555; 
+    margin-top: auto; 
+}
+</style>
+<script>
+let currentEmote = 'normal';
+let currentPage = 1;
+
+// --- PAGE DATA ---
+const page1 = {
+    topLeft: { id: 'sad', file: 'sad.svg', name: 'SAD' },
+    topRight: { id: 'mad', file: 'mad.svg', name: 'MAD' },
+    bottomLeft: { id: 'huh', file: 'huh.svg', name: 'HUH' },
+    bottomRight: { id: 'uwu', file: 'uwu.svg', name: 'UWU' },
+    center: { id: 'normal', file: 'normal.svg', name: 'NORMAL' }
+};
+
+const page2 = {
+    topLeft: { id: 'em2', file: 'custom-emote-2.svg', name: 'CUSTOM 2' },
+    topRight: { id: 'em3', file: 'custom-emote-3.svg', name: 'CUSTOM 3' },
+    bottomLeft: { id: 'em4', file: 'custom-emote-4.svg', name: 'CUSTOM 4' },
+    bottomRight: { id: 'em5', file: 'custom-emote-5.svg', name: 'CUSTOM 5' },
+    center: { id: 'em1', file: 'custom-emote-1.svg', name: 'CUSTOM 1' }
+};
+
+function set(buttonPosition) { 
+    const activePage = (currentPage === 1) ? page1 : page2;
+    const emoteData = activePage[buttonPosition];
+    
+    console.log("Mockup Button Pressed: " + emoteData.id); 
+    
+    const allBtns = document.querySelectorAll('.btn');
+    allBtns.forEach(btn => btn.classList.remove('selected'));
+    
+    document.getElementById('btn-' + buttonPosition).classList.add('selected');
+    
+    currentEmote = emoteData.id;
+    document.getElementById('emotion-text').innerText = emoteData.name;
+    document.getElementById('emotion-text').style.color = "#FFF";
+}
+
+function togglePage() {
+    currentPage = (currentPage === 1) ? 2 : 1;
+    const activePage = (currentPage === 1) ? page1 : page2;
+    
+    document.getElementById('btn-topLeft').src = activePage.topLeft.file;
+    document.getElementById('btn-topRight').src = activePage.topRight.file;
+    document.getElementById('btn-bottomLeft').src = activePage.bottomLeft.file;
+    document.getElementById('btn-bottomRight').src = activePage.bottomRight.file;
+    document.getElementById('btn-center').src = activePage.center.file;
+    
+    const allBtns = document.querySelectorAll('.btn');
+    allBtns.forEach(btn => btn.classList.remove('selected'));
+    
+    for (const position in activePage) {
+        if (activePage[position].id === currentEmote) {
+             document.getElementById('btn-' + position).classList.add('selected');
+        }
+    }
+}
+
+// --- SIGNAL LOGIC ---
+const signalStates = [
+    { file: 'signal-empty.svg', size: '1.1rem' },
+    { file: 'signal-green.svg', size: '1.1rem' },
+    { file: 'signal-orange.svg', size: '0.85rem' }, 
+    { file: 'signal-red.svg', size: '0.55rem' }     
+];
+let signalIndex = 0;
+
+function cycleSignal() {
+    signalIndex = (signalIndex + 1) % signalStates.length;
+    const icon = document.getElementById('signal-icon');
+    icon.src = signalStates[signalIndex].file;
+    icon.style.height = signalStates[signalIndex].size;
+}
+</script>
+</head><body>
+    
+<div class='header'>
+  <div class='header-col'>
+    <div class='header-row'>Type: [P-V01\\]</div>
+    <div class='header-row'>Name: [Test]</div>
+  </div>
+  
+  <div class='header-col header-right'>
+    
+    <div class='header-row signal-wrapper'>
+      <div>Signal:</div>
+      <div class='icon-container'>
+        <img id='signal-icon' src='signal-empty.svg' onclick='cycleSignal()'>
+      </div>
+    </div>
+    
+    <div class='header-row'>
+      Emotion: <span id='emotion-text' style="color: #999; margin-left: 6px;">NORMAL</span>
+    </div>
+    
+  </div>
+</div>
+
+<div class='carousel-wrapper'>
+  <img class='nav-arrow' src='leftarrow.svg' onclick='togglePage()'>
+
+  <div class='container'>
+    <img id='btn-topLeft' class='btn' src='sad.svg' onclick="set('topLeft')">
+    <img id='btn-topRight' class='btn' src='mad.svg' onclick="set('topRight')">
+    <img id='btn-bottomLeft' class='btn' src='huh.svg' onclick="set('bottomLeft')">
+    <img id='btn-bottomRight' class='btn' src='uwu.svg' onclick="set('bottomRight')">
+    <img id='btn-center' class='btn center-btn selected' src='normal.svg' onclick="set('center')">
+  </div>
+
+  <img class='nav-arrow' src='rightarrow.svg' onclick='togglePage()'>
+</div>
+
+<div class='footer'>&copy; 2026 SleepyPibbleCo. All rights reserved.</div>
+</body></html>
