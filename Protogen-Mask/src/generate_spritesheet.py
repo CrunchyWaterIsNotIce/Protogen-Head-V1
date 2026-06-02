@@ -1,6 +1,7 @@
 from PIL import Image
 
-def generate_animation(image_path, part_name, frame_width, frame_height, scan_right_to_left=True, start_bottom=False):
+textAtEnd = []
+def generate_animation(image_path, part_name, frame_width, frame_height, action_type, scan_right_to_left=True, start_bottom=False):
     """
     Generate C++ animation array from sprite sheet
     
@@ -9,6 +10,7 @@ def generate_animation(image_path, part_name, frame_width, frame_height, scan_ri
         part_name: Name of the body part (e.g., 'mouth', 'nose')
         frame_width: Width of each frame in pixels
         frame_height: Height of each frame in pixels
+        action_type: Type of action (e.g., 'idle', 'happy', 'sad')
         scan_right_to_left: Scanning direction for LED wiring (horizontal)
         start_bottom: Start from bottom row instead of top (for eyes)
     """
@@ -20,9 +22,9 @@ def generate_animation(image_path, part_name, frame_width, frame_height, scan_ri
     num_frames = sheet_width // frame_width
     pixels_per_frame = frame_width * frame_height
     
-    print(f"// {part_name.upper()} Animation")
+    print(f"// {part_name.upper()+action_type.upper()} Animation")
     print(f"// Frames: {num_frames}, Size: {frame_width}x{frame_height}")
-    print(f"const CRGB {part_name}Frames[] PROGMEM = {{")
+    print(f"const CRGB {part_name}{action_type}Frames[] PROGMEM = {{")
     
     for frame_num in range(num_frames):
         print(f"  // Frame {frame_num}")
@@ -84,73 +86,60 @@ def generate_animation(image_path, part_name, frame_width, frame_height, scan_ri
                 print()
     
     print("};")
-    print(f"\nAnimation {part_name}Idle = {{{part_name}Frames, {num_frames}, {pixels_per_frame}, 10}};")
+    textAtEnd.append(f"const Animation {part_name}{action_type.capitalize()} PROGMEM = {{{part_name}{action_type.capitalize()}Frames, {num_frames}, {pixels_per_frame}, 10}};")
+    # print(f"\nAnimation {part_name}{action_type.capitalize()} = {{{part_name}{action_type.capitalize()}Frames, {num_frames}, {pixels_per_frame}, 10}};")
     print()
 
-# Mouth: right to left, top to bottom
-# generate_animation('./assets/test_mouth_8x32-Sheet.png', 'mouth', 32, 8, scan_right_to_left=True, start_bottom=False)
-
+### ========== DEFAULT 1 ==========
+## -- PRIORITY --
 # Nose: left to right, bottom to top
-# generate_animation('./assets/test_nose_4x12-Sheet.png', 'nose', 12, 4, scan_right_to_left=False, start_bottom=False)
-
-# Right Eye: right to left, top to bottom
-# generate_animation('./assets/test_righteye_8x8-Sheet.png', 'eyeRight', 8, 8, scan_right_to_left=True, start_bottom=False)
-
-# Left Eye: right to left, top to bottom
-# generate_animation('./assets/test_lefteye_8x8-Sheet.png', 'eyeLeft', 8, 8, scan_right_to_left=True, start_bottom=False)
-
-# # Right Ear: right to left, top to bottom
-# generate_animation('./assets/test_rightear_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
-
-# # Left Ear: right to left, top to bottom
-# generate_animation('./assets/test_leftear_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
-
-# # Mouth: right to left, top to bottom
-# generate_animation('./assets/evil_mouth_8x32-Sheet.png', 'mouth', 32, 8, scan_right_to_left=True, start_bottom=False)
-
-# # Nose: left to right, bottom to top
-# generate_animation('./assets/evil_nose_4x12-Sheet.png', 'nose', 12, 4, scan_right_to_left=False, start_bottom=False)
-
-# # Right Eye: right to left, top to bottom
-# generate_animation('./assets/evil_righteye_8x8-Sheet.png', 'eyeRight', 8, 8, scan_right_to_left=True, start_bottom=False)
-
-# # Left Eye: right to left, top to bottom
-# generate_animation('./assets/evil_lefteye_8x8-Sheet.png', 'eyeLeft', 8, 8, scan_right_to_left=True, start_bottom=False)
-
-# # # Right Ear: right to left, top to bottom
-# generate_animation('./assets/evil_rightear_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
-
-# # # Left Ear: right to left, top to bottom
-# generate_animation('./assets/evil_leftear_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
-
-########## ACTIONS
-
-### TALK
+generate_animation('./assets/Default_1/normal/Default_1_normal_nose_4x12-Sheet.png', 'nose', 12, 4, 'Idle', scan_right_to_left=False, start_bottom=False)
 # Mouth: right to left, top to bottom
-# generate_animation('./assets/evil_mouth_talk_8x32-Sheet.png', 'mouth_talk', 32, 8, scan_right_to_left=True, start_bottom=False)
+generate_animation('./assets/Default_1/Default_1_talk_mouth_8x32-Sheet.png', 'normal_mouth', 32, 8, 'Talk', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/Default_1_blink_righteye_8x8-Sheet.png', 'normal_righteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/Default_1_blink_lefteye_8x8-Sheet.png', 'normal_lefteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
 
-### BLINK
-# # # Right Eye: right to left, top to bottom
-# generate_animation('./assets/evil_righteye_blink_8x8-Sheet.png', 'eyeRight_blink', 8, 8, scan_right_to_left=True, start_bottom=False)
+## - NORMAL -
+# Mouth: right to left, top to bottom
+generate_animation('./assets/Default_1/normal/Default_1_normal_mouth_8x32-Sheet.png', 'normal_mouth', 32, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/normal/Default_1_normal_righteye_8x8-Sheet.png', 'normal_righteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/normal/Default_1_normal_lefteye_8x8-Sheet.png', 'normal_lefteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
 
-# # # Left Eye: right to left, top to bottom
-# generate_animation('./assets/evil_lefteye_blink_8x8-Sheet.png', 'eyeLeft_blink', 8, 8, scan_right_to_left=True, start_bottom=False)
+## - SAD -
+# Mouth: right to left, top to bottom
+generate_animation('./assets/Default_1/sad/Default_1_sad_mouth_8x32-Sheet.png', 'sad_mouth', 32, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/sad/Default_1_sad_righteye_8x8-Sheet.png', 'sad_righteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/sad/Default_1_sad_lefteye_8x8-Sheet.png', 'sad_lefteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
 
-### CONNECT
-# # # Right Eye: right to left, top to bottom
-# generate_animation('./assets/test_righteye_connect_8x8-Sheet.png', 'eyeRight_connect', 8, 8, scan_right_to_left=True, start_bottom=False)
+## - HUH -
+# Mouth: right to left, top to bottom
+generate_animation('./assets/Default_1/huh/Default_1_huh_mouth_8x32-Sheet.png', 'huh_mouth', 32, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/huh/Default_1_huh_righteye_8x8-Sheet.png', 'huh_righteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/huh/Default_1_huh_lefteye_8x8-Sheet.png', 'huh_lefteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
 
-# # # Left Eye: right to left, top to bottom
-# generate_animation('./assets/test_lefteye_connect_8x8-Sheet.png', 'eyeLeft_connect', 8, 8, scan_right_to_left=True, start_bottom=False)
+## - MAD -
+# Mouth: right to left, top to bottom
+generate_animation('./assets/Default_1/mad/Default_1_mad_mouth_8x32-Sheet.png', 'mad_mouth', 32, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/mad/Default_1_mad_righteye_8x8-Sheet.png', 'mad_righteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/mad/Default_1_mad_lefteye_8x8-Sheet.png', 'mad_lefteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
 
-# # Mouth: right to left, top to bottom
-# generate_animation('./assets/test_mouth_connect_8x32-Sheet.png', 'mouth_connect', 32, 8, scan_right_to_left=True, start_bottom=False)
+## - UWU -
+# Mouth: right to left, top to bottom
+generate_animation('./assets/Default_1/uwu/Default_1_uwu_mouth_8x32-Sheet.png', 'uwu_mouth', 32, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Right Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/uwu/Default_1_uwu_righteye_8x8-Sheet.png', 'uwu_righteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
+# Left Eye: right to left, top to bottom
+generate_animation('./assets/Default_1/uwu/Default_1_uwu_lefteye_8x8-Sheet.png', 'uwu_lefteye', 8, 8, 'Idle', scan_right_to_left=True, start_bottom=False)
 
-# # Nose: left to right, bottom to top
-# generate_animation('./assets/test_nose_connect_4x12-Sheet.png', 'nose_connect', 12, 4, scan_right_to_left=False, start_bottom=False)
-
-# # Right Ear: right to left, top to bottom
-generate_animation('./assets/test_rightear_connect_1x30-Sheet.png', 'rightEar', 30, 1, scan_right_to_left=True, start_bottom=False)
-
-# # Left Ear: right to left, top to bottom
-generate_animation('./assets/test_leftear_connect_1x30-Sheet.png', 'leftEar', 30, 1, scan_right_to_left=True, start_bottom=False)
+for text in textAtEnd:
+    print(text)

@@ -136,19 +136,22 @@ body {
 #prev-arrow { left: 10px; }
 #next-arrow { right: 10px; }
 
-/* 50px padding creates a safe gutter for the arrows, 50vh stops it from crushing the footer! */
+/* 1. Add 20px top/bottom padding to give the shadow vertical breathing room */
 .container { 
     position: relative; 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
     gap: 12px; 
-    padding: 0 50px; 
+    padding: 20px 50px; /* <--- CHANGED: Was 0 50px */
     width: 100%; 
     max-width: min(500px, 50vh); 
     box-sizing: border-box; 
 }
 
+/* 2. Add position and a base z-index so the browser knows how to layer them */
 .btn { 
+    position: relative; /* <--- NEW */
+    z-index: 1;         /* <--- NEW */
     width: 100%; 
     height: auto; 
     display: block;
@@ -158,8 +161,10 @@ body {
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); 
 }
 
+/* 3. Elevate the selected button to z-index 5 so its glow floats ABOVE all other buttons */
 .btn.selected {
     opacity: 1;
+    z-index: 5;         /* <--- NEW: Pops the active button to the top layer */
     filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
 }
 
