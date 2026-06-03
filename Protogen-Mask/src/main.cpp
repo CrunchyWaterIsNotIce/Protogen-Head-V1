@@ -40,6 +40,30 @@ BlinkPipeline blinkPipeline;
 ConnectionPipeline connectionPipeline;
 SoundTrigger soundTrigger(SOUND_THRESHOLD, 1000);
 
+namespace {
+struct EmotionSet {
+    const Animation* mouthIdle;
+    const Animation* rightEyeIdle;
+    const Animation* leftEyeIdle;
+};
+
+EmotionSet getEmotionSet(uint8_t emotionId) {
+    switch (emotionId) {
+        case 1:
+            return {&mad_mouthIdle, &mad_righteyeIdle, &mad_lefteyeIdle};
+        case 2:
+            return {&sad_mouthIdle, &sad_righteyeIdle, &sad_lefteyeIdle};
+        case 3:
+            return {&huh_mouthIdle, &huh_righteyeIdle, &huh_lefteyeIdle};
+        case 4:
+            return {&uwu_mouthIdle, &uwu_righteyeIdle, &uwu_lefteyeIdle};
+        case 0:
+        default:
+            return {&normal_mouthIdle, &normal_righteyeIdle, &normal_lefteyeIdle};
+    }
+}
+}
+
 void setup() {
     Serial.begin(115200);
     randomSeed(analogRead(MIC_PIN));
@@ -56,7 +80,8 @@ void setup() {
     FastLED.clear(true);
     FastLED.show();
 
-    visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+    EmotionSet initialEmotion = getEmotionSet(wifiPortalGetEmotion());
+    visorPipeline.setAnimations(*initialEmotion.mouthIdle, noseIdle, *initialEmotion.rightEyeIdle, *initialEmotion.leftEyeIdle);
     leftEarPipeline.setAnimation(leftEarIdle, NUM_EAR_LEDS);
     rightEarPipeline.setAnimation(rightEarIdle, NUM_EAR_LEDS);
     blinkPipeline.setAnimations(eyeLeft_blinkAction, eyeRight_blinkAction);
@@ -77,6 +102,8 @@ void loop() {
     static bool lastSenseRaw = false;
     static bool debouncedConnected = false;
     static unsigned long senseChangeMs = 0;
+    static uint8_t lastEmotion = 0;
+    static EmotionSet activeEmotion = getEmotionSet(0);
 
     bool senseRaw = (digitalRead(SENSE_PIN) == LOW);
     if (senseRaw != lastSenseRaw) {
@@ -118,8 +145,21 @@ void loop() {
         return;
     }
 
+    uint8_t portalEmotion = wifiPortalGetEmotion();
+    if (portalEmotion != lastEmotion) {
+        activeEmotion = getEmotionSet(portalEmotion);
+        lastEmotion = portalEmotion;
+        if (talkMode) {
+            visorPipeline.setAnimations(mouth_talkAction, noseIdle, *activeEmotion.rightEyeIdle, *activeEmotion.leftEyeIdle);
+        } else {
+            visorPipeline.setAnimations(*activeEmotion.mouthIdle, noseIdle, *activeEmotion.rightEyeIdle, *activeEmotion.leftEyeIdle);
+        }
+        visorPipeline.reset();
+    }
+
     if (!postConnectInitDone) {
-        visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+        activeEmotion = getEmotionSet(portalEmotion);
+        visorPipeline.setAnimations(*activeEmotion.mouthIdle, noseIdle, *activeEmotion.rightEyeIdle, *activeEmotion.leftEyeIdle);
         visorPipeline.reset();
         blinkPipeline.reset();
         talkMode = false;
@@ -151,10 +191,10 @@ void loop() {
     // --- 3. THE SIMPLE TRIGGER ---
     bool soundActive = soundTrigger.update(peakToPeak);
     if (soundActive && !talkMode) {
-        visorPipeline.setAnimations(mouth_talkAction, noseIdle, eyeRightIdle, eyeLeftIdle);
+        visorPipeline.setAnimations(mouth_talkAction, noseIdle, *activeEmotion.rightEyeIdle, *activeEmotion.leftEyeIdle);
         talkMode = true;
     } else if (!soundActive && talkMode) {
-        visorPipeline.setAnimations(mouthIdle, noseIdle, eyeRightIdle, eyeLeftIdle);
+        visorPipeline.setAnimations(*activeEmotion.mouthIdle, noseIdle, *activeEmotion.rightEyeIdle, *activeEmotion.leftEyeIdle);
         talkMode = false;
     }
 

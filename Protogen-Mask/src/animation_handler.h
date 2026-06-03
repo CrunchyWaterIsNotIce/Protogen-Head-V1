@@ -147,11 +147,11 @@ struct SoundTrigger {
 };
 
 // Global animation definitions
-extern Animation mouthIdle;
-extern Animation noseIdle;
-extern Animation eyeRightIdle;
-extern Animation eyeLeftIdle;
-extern Animation eyeRightBlink;
-extern Animation eyeLeftBlink;
+extern const Animation mouthIdle;
+extern const Animation noseIdle;
+extern const Animation eyeRightIdle;
+extern const Animation eyeLeftIdle;
+extern const Animation eyeRightBlink;
+extern const Animation eyeLeftBlink;
 
 #endif

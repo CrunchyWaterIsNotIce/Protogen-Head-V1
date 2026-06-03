@@ -7,9 +7,6 @@
 #include "wifi_portal.h"
 #include "svg_assets.h" // <-- NEW: All your SVGs are cleanly imported here!
 
-// Link to the emotion variable in your main .ino file
-int currentEmotion = 0;
-
 namespace {
 // --- SECURITY & NETWORK SETTINGS ---
 const char* kApSsid = "Protogen_Visor";
@@ -17,6 +14,8 @@ const char* kApPassword = "protogen-visor"; // Must be 8+ characters
 const byte kDnsPort = 53;
 const IPAddress kApIp(192, 168, 4, 1);
 const IPAddress kApNetmask(255, 255, 255, 0);
+
+static volatile uint8_t currentEmotion = 0;
 
 DNSServer dnsServer;
 WebServer webServer(80);
@@ -219,6 +218,35 @@ const page2 = {
     center: { id: 'em1', file: '/custom-emote-1.svg', name: 'CUSTOM 1' }
 };
 
+function applyEmoteUI(emoteId) {
+    currentEmote = emoteId;
+    let activePage = page1;
+    let pos = 'center';
+    let foundPage = 1;
+    
+    // Find which page and position the emote belongs to
+    for (const p in page1) { if (page1[p].id === emoteId) { activePage = page1; pos = p; foundPage = 1; break; } }
+    for (const p in page2) { if (page2[p].id === emoteId) { activePage = page2; pos = p; foundPage = 2; break; } }
+    
+    currentPage = foundPage; // Sync the page tracker
+    
+    // Force the correct icons for the active page
+    document.getElementById('btn-topLeft').src = activePage.topLeft.file;
+    document.getElementById('btn-topRight').src = activePage.topRight.file;
+    document.getElementById('btn-bottomLeft').src = activePage.bottomLeft.file;
+    document.getElementById('btn-bottomRight').src = activePage.bottomRight.file;
+    document.getElementById('btn-center').src = activePage.center.file;
+
+    // Update text
+    document.getElementById('emotion-text').innerText = activePage[pos].name;
+    document.getElementById('emotion-text').style.color = "#FFF";
+
+    // Update glowing selection
+    const allBtns = document.querySelectorAll('.btn');
+    allBtns.forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('btn-' + pos).classList.add('selected');
+}
+
 function set(buttonPosition) { 
     const activePage = (currentPage === 1) ? page1 : page2;
     const emoteData = activePage[buttonPosition];
@@ -226,13 +254,15 @@ function set(buttonPosition) {
     // Ping ESP32
     fetch('/set?emote=' + emoteData.id);
     
-    const allBtns = document.querySelectorAll('.btn');
-    allBtns.forEach(btn => btn.classList.remove('selected'));
-    document.getElementById('btn-' + buttonPosition).classList.add('selected');
-    
-    currentEmote = emoteData.id;
-    document.getElementById('emotion-text').innerText = emoteData.name;
-    document.getElementById('emotion-text').style.color = "#FFF";
+    // Update UI instantly
+    applyEmoteUI(emoteData.id);
+}
+
+function syncEmotion() {
+    fetch('/getEmote')
+        .then(r => r.text())
+        .then(emoteId => applyEmoteUI(emoteId))
+        .catch(e => console.log('Emote sync error'));
 }
 
 function togglePage() {
@@ -279,7 +309,11 @@ function pollSignal() {
         }).catch(e => console.log('Signal poll error'));
 }
 setInterval(pollSignal, 3000);
-window.onload = pollSignal;
+
+window.onload = () => {
+    pollSignal();
+    syncEmotion();
+};
 </script>
 </head><body>
     
@@ -348,8 +382,26 @@ void handleEmotionSet() {
     else if (emote == "em3") currentEmotion = 7;
     else if (emote == "em4") currentEmotion = 8;
     else if (emote == "em5") currentEmotion = 9;
+    else currentEmotion = 0;
   }
   webServer.send(200, "text/plain", "OK");
+}
+
+void handleGetEmotion() {
+  String emoteStr = "normal";
+  switch(currentEmotion) {
+    case 1: emoteStr = "mad"; break;
+    case 2: emoteStr = "sad"; break;
+    case 3: emoteStr = "huh"; break;
+    case 4: emoteStr = "uwu"; break;
+    case 5: emoteStr = "em1"; break;
+    case 6: emoteStr = "em2"; break;
+    case 7: emoteStr = "em3"; break;
+    case 8: emoteStr = "em4"; break;
+    case 9: emoteStr = "em5"; break;
+    default: emoteStr = "normal"; break;
+  }
+  webServer.send(200, "text/plain", emoteStr);
 }
 
 void handleSignal() {
@@ -372,6 +424,10 @@ void handleNotFound() {
 }
 } // End namespace
 
+uint8_t wifiPortalGetEmotion() {
+  return currentEmotion;
+}
+
 // =================================================================================
 // 3. SETUP & LOOP
 // =================================================================================
@@ -392,6 +448,7 @@ void wifiPortalSetup() {
   webServer.on("/", handleRoot);
   webServer.on("/set", handleEmotionSet);
   webServer.on("/signal", handleSignal);
+  webServer.on("/getEmote", handleGetEmotion);
   
   // Registering imported SVGs from svg_assets.h
   webServer.on("/sad.svg", []() { serveSVG(svg_sad); });

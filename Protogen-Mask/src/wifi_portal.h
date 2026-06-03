@@ -3,5 +3,6 @@
 
 void wifiPortalSetup();
 void wifiPortalUpdate();
+uint8_t wifiPortalGetEmotion();
 
 #endif

@@ -90,16 +90,37 @@ def generate_animation(image_path, part_name, frame_width, frame_height, action_
     # print(f"\nAnimation {part_name}{action_type.capitalize()} = {{{part_name}{action_type.capitalize()}Frames, {num_frames}, {pixels_per_frame}, 10}};")
     print()
 
+
+#### -=-=-=-=-=-=-=- DEFAULT ANIMATIONS =-=-=-=-=-=-=-
+
+# ### ========== CONNECTING ==========
+# # Nose: left to right, bottom to top
+# generate_animation('./assets/Default_connect_nose_4x12-Sheet.png', 'link_nose', 12, 4, 'Connect', scan_right_to_left=False, start_bottom=False)
+# # Mouth: right to left, top to bottom
+# generate_animation('./assets/Default_connect_mouth_8x32-Sheet.png', 'link_mouth', 32, 8, 'Connect',  scan_right_to_left=True, start_bottom=False)
+# # Right Eye: right to left, top to bottom
+# generate_animation('./assets/Default_connect_righteye_8x8-Sheet.png', 'link_righteye', 8, 8, 'Connect', scan_right_to_left=True, start_bottom=False)
+# # Left Eye: right to left, top to bottom
+# generate_animation('./assets/Default_connect_lefteye_8x8-Sheet.png', 'link_lefteye', 8, 8, 'Connect', scan_right_to_left=True, start_bottom=False)
+# # Right Ear: right to left, top to bottom
+# generate_animation('./assets/Default_connect_rightear_1x30-Sheet.png', 'link_rightear', 1, 30, 'Connect', scan_right_to_left=True, start_bottom=False)
+# # Left Ear: right to left, top to bottom
+# generate_animation('./assets/Default_connect_leftear_1x30-Sheet.png', 'link_leftear', 1, 30, 'Connect', scan_right_to_left=True, start_bottom=False)
+
 ### ========== DEFAULT 1 ==========
-## -- PRIORITY --
-# Nose: left to right, bottom to top
-generate_animation('./assets/Default_1/normal/Default_1_normal_nose_4x12-Sheet.png', 'nose', 12, 4, 'Idle', scan_right_to_left=False, start_bottom=False)
-# Mouth: right to left, top to bottom
-generate_animation('./assets/Default_1/Default_1_talk_mouth_8x32-Sheet.png', 'normal_mouth', 32, 8, 'Talk', scan_right_to_left=True, start_bottom=False)
-# Right Eye: right to left, top to bottom
-generate_animation('./assets/Default_1/Default_1_blink_righteye_8x8-Sheet.png', 'normal_righteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
-# Left Eye: right to left, top to bottom
-generate_animation('./assets/Default_1/Default_1_blink_lefteye_8x8-Sheet.png', 'normal_lefteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
+# ## -- PRIORITY --
+# # Nose: left to right, bottom to top
+# generate_animation('./assets/Default_1/normal/Default_1_normal_nose_4x12-Sheet.png', 'normal_nose', 12, 4, 'Idle', scan_right_to_left=False, start_bottom=False)
+# # Mouth: right to left, top to bottom TALK
+# generate_animation('./assets/Default_1/Default_1_talk_mouth_8x32-Sheet.png', 'normal_mouth', 32, 8, 'Talk', scan_right_to_left=True, start_bottom=False)
+# # Right Eye: right to left, top to bottom BLINK
+# generate_animation('./assets/Default_1/Default_1_blink_righteye_8x8-Sheet.png', 'normal_righteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
+# # Left Eye: right to left, top to bottom BLINK
+# generate_animation('./assets/Default_1/Default_1_blink_lefteye_8x8-Sheet.png', 'normal_lefteye', 8, 8, 'Blink', scan_right_to_left=True, start_bottom=False)
+# # Right Ear: right to left, top to bottom
+# generate_animation('./assets/Default_1/normal/Default_1_normal_rightear_1x30-Sheet.png', 'normal_rightear', 1, 30, 'Idle', scan_right_to_left=True, start_bottom=False)
+# # Left Ear: right to left, top to bottom
+# generate_animation('./assets/Default_1/normal/Default_1_normal_leftear_1x30-Sheet.png', 'normal_leftear', 1, 30, 'Idle', scan_right_to_left=True, start_bottom=False)
 
 ## - NORMAL -
 # Mouth: right to left, top to bottom
